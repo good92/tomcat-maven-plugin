@@ -19,6 +19,7 @@ package org.apache.tomcat.maven.plugin.tomcat7;
  * under the License.
  */
 
+import org.apache.maven.artifact.manager.CredentialsDataSourceException;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -184,8 +185,15 @@ public abstract class AbstractCatalinaMojo
             }
             else
             {
-                // obtain authenication details for specified server from wagon
-                AuthenticationInfo info = wagonManager.getAuthenticationInfo( server );
+                AuthenticationInfo info = null;
+                // obtain authentication details for specified server from wagon
+                try {
+                    info = wagonManager.getAuthenticationInfo( server );
+                } catch (CredentialsDataSourceException e) {
+                    throw new MojoExecutionException(
+                            messagesProvider.getMessage( "AbstractCatalinaMojo.credentialsDataSourceException", server ) );
+                }
+
                 if ( info == null )
                 {
                     throw new MojoExecutionException(
